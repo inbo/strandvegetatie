@@ -1,0 +1,170 @@
+---
+title: "Analyse strandvegetatie"
+author: "Hans Van Calster"
+date: "`r Sys.Date()`"
+output:
+  bookdown::html_document2:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+opts_chunk$set(echo = TRUE, out.width = "100%")
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(ggplot2)
+library(sdmTMB)
+library(ggeffects)
+```
+
+
+```{r inlezen}
+strand <- read_excel(
+  here::here("data/StrandFlora24_PerStrand.xlsx"),
+  sheet = "PerStrand"
+) %>%
+  janitor::clean_names() %>%
+  mutate(
+    traject = factor(traject),
+    type = factor(type)
+  )
+
+strand
+```
+
+# Verkenning van de gegevens
+
+```{r}
+glimpse(strand)
+```
+
+
+Responsvariabelen (de plantensoorten) zijn tellingen van aantallen 10 m x 10 m hokken per traject.
+
+verklarende variabelen:
+
+-   `type`: 3 globale profieltypes met al dan niet duin, dijk en urbane zone
+
+-   `rijsh`: aanwezigheid van rijshouthagen (oppervlakte in m²) <!-- spell-check: ignore -->
+
+-   `opp`: oppervlakte van elk strand hoger gelegen dan 50 cm boven gemiddeld spring hoogwaterniveau (m²). Dit is de oppervlakte waarbinnen de soorten potentieel kunnen voorkomen
+
+-   `vers_gem`: gemiddeld verschil van terreinhoogte in meter TAW van het betreffende jaar met dat van een jaar daarvoor (binnen die oppervlakte van hierboven). Ik heb er de kwadratische term ook bijgezet omdat je hier een optimumrespons zou verwachten. Te hoge erosie (negatief) of aanwas (positief) is wellicht niet bevorderlijk voor de vestiging. Er zijn 2 uitbijters in `vers_gem`: 2,58 en 2,87 te wijten aan strandsuppletie.
+
+-   `vers_stdev`: standaarddeviatie van het hoogteverschil. Een globale maat voor de dynamiek op het strand, los van erosie of sedimentatie.
+
+-   `helling` (in graden)
+
+
+```{r}
+strand %>%
+  count(traject, name = "aantal jaren") %>%
+  kable()
+```
+
+```{r}
+strand2 <- strand %>%
+  pivot_longer(
+    cols = c(ammopare:polynoxy),
+    names_to = "soort",
+    values_to = "aantal"
+  )
+```
+
+```{r}
+strand2 %>%
+  ggplot() +
+  geom_line(
+    aes(x = jaar, y = aantal, group = traject, colour = type),
+    alpha = 0.4
+  ) +
+  facet_wrap(~soort, scales = "free_y")
+```
+
+```{r}
+strand %>%
+  ggplot() +
+  geom_line(
+    aes(x = jaar, y = rijsh, group = traject, colour = type),
+    alpha = 0.4
+  )
+strand %>%
+  ggplot() +
+  geom_line(
+    aes(x = jaar, y = opp, group = traject, colour = type),
+    alpha = 0.4
+  )
+strand %>%
+  ggplot() +
+  geom_line(
+    aes(x = jaar, y = vers_gem, group = traject, colour = type),
+    alpha = 0.4
+  )
+strand %>%
+  ggplot() +
+  geom_line(
+    aes(x = jaar, y = vers_stdev, group = traject, colour = type),
+    alpha = 0.4
+  )
+strand %>%
+  ggplot() +
+  geom_line(
+    aes(x = jaar, y = helling, group = traject, colour = type),
+    alpha = 0.4
+  )
+```
+
+Het type hangt sterk samen met oppervlakte en helling:
+
+-   Type dijk_badplaats: helling klein, oppervlakte groot.
+  
+-   Type Dijk_duin: steile helling, kleine oppervlakte
+
+-   Type Duin: gemiddelde helling en gemiddelde oppervlakte
+
+```{r}
+strand %>%
+  ggplot() +
+  ggforce::geom_autopoint(
+    aes(colour = type), alpha = 0.4
+  ) +
+  ggforce::facet_matrix(
+    rows = vars(rijsh, opp, vers_gem, vers_stdev, helling))
+```
+
+# Modellering
+
+```{r child-model, results = "asis", eval = TRUE}
+purrr::pmap(
+  list(
+    species = c(
+      "ammopare", "cakilmar", "elymufar",
+      "honckpep", "leymuare", "salsok_k",
+      "atrippro", "beta_v_m")
+  ),
+  function(
+    species = species) {
+    knit_expand(
+      here::here(
+        "source",
+        "_child_model.Rmd"),
+      species = species)
+  }
+) %>%
+  paste(collapse = "\n") -> rmd
+
+# onderstaande clipr code kan je gebruiken om de rmd naar klembord te schrijven
+# daarna kan je dit plakken in een tijdelijk bestand en de chunks runnen
+# enkel nodig indien je interactief werkt en de code van deze chunks nodig hebt
+# clipr::write_clip(rmd) # nolint
+
+knit(text = rmd, quiet = TRUE) %>%
+  cat()
+```
+
+
+

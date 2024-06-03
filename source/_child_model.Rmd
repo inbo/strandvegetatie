@@ -1,0 +1,61 @@
+## {{species}}
+
+```{r}
+m_nb2 <- sdmTMB(
+  {{species}} ~
+    scale(jaar, scale = FALSE)
+  + type
+  + log(rijsh + 1)
+  + poly(vers_gem, 2)
+  + vers_stdev
+  + (1 | traject)
+  ,
+  data = strand,
+  family = nbinom2(),
+  spatial = "off")
+```
+
+```{r eval=!is.null(m_nb2)}
+set.seed(123)
+rq_res <- residuals(m_nb2, type = "mle-mvn")
+rq_res <- rq_res[is.finite(rq_res)] # some Inf
+qqnorm(rq_res)
+abline(0, 1)
+
+sanity(m_nb2)
+```
+
+
+```{r eval=!is.null(m_nb2)}
+tidy(m_nb2)
+tidy(m_nb2, effects = "ran_pars")
+tidy(m_nb2, effects = "ran_vals")
+```
+
+
+```{r eval=!is.null(m_nb2)}
+g <- ggeffect(m_nb2, "type")
+plot(g)
+```
+
+```{r eval=!is.null(m_nb2)}
+g <- ggeffect(m_nb2, "jaar")
+plot(g)
+```
+
+```{r eval=!is.null(m_nb2)}
+g <- ggeffect(m_nb2, "rijsh")
+plot(g) + scale_x_continuous(transform = scales::pseudo_log_trans())
+```
+
+```{r eval=!is.null(m_nb2)}
+g <- ggeffect(m_nb2, "vers_gem")
+plot(g)
+```
+
+
+```{r eval=!is.null(m_nb2)}
+g <- ggeffect(m_nb2, "vers_stdev")
+plot(g)
+```
+

@@ -1,0 +1,36 @@
+{
+  "access_right": "open",
+  "title": "Analyse van strandvegetatie",
+  "description": "<p>Analyse van spontaan gevestigde strandvegetatie langs de Belgische kust<\/p>",
+  "keywords": [
+    "PINK",
+    "stranddynamiek"
+  ],
+  "upload_type": "software",
+  "license": "CC-BY-4.0",
+  "language": "nld",
+  "contributors": [
+    {
+      "name": "Van Calster, Hans",
+      "affiliation": "Research Institute for Nature and Forest (INBO)",
+      "orcid": "0000-0001-8595-8426",
+      "type": "contactperson"
+    },
+    {
+      "name": "Research Institute for Nature and Forest (INBO)",
+      "type": "rightsholder"
+    }
+  ],
+  "creators": [
+    {
+      "name": "Van Calster, Hans",
+      "affiliation": "Research Institute for Nature and Forest (INBO)",
+      "orcid": "0000-0001-8595-8426"
+    }
+  ],
+  "communities": [
+    {
+      "identifier": "inbo"
+    }
+  ]
+}

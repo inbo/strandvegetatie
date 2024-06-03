@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it using these metadata.
+title: "Analyse van strandvegetatie"
+authors:
+- given-names: Hans
+  family-names: Van Calster
+  affiliation: Research Institute for Nature and Forest (INBO)
+  orcid: 0000-0001-8595-8426
+keywords:
+- PINK
+- stranddynamiek
+contact:
+- given-names: Hans
+  family-names: Van Calster
+  affiliation: Research Institute for Nature and Forest (INBO)
+  orcid: 0000-0001-8595-8426
+doi: ~
+license: CC-BY-4.0
+repository-code: https://github.com/inbo/strandvegetatie/
+type: software
+abstract: "Analyse van spontaan gevestigde strandvegetatie langs de Belgische kust"
