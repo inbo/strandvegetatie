@@ -30,7 +30,12 @@ strand <- read_excel(
   janitor::clean_names() %>%
   mutate(
     traject = factor(traject),
-    type = factor(type)
+    type = factor(type),
+    rijshf = case_when(
+      rijsh == 0 ~ "geen rijshout",
+      between(rijsh, 0, 5000) ~ "tot 5000 m2",
+      rijsh > 5000 ~ "meer dan 5000 m2"
+    ) %>% factor(levels = c("geen rijshout", "tot 5000 m2", "meer dan 5000 m2"))
   )
 
 strand

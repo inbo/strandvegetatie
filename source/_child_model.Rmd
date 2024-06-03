@@ -3,10 +3,10 @@
 ```{r}
 m_nb2 <- sdmTMB(
   {{species}} ~
-    scale(jaar, scale = FALSE)
+    s(jaar)
   + type
-  + log(rijsh + 1)
-  + poly(vers_gem, 2)
+  + rijshf
+  + vers_gem
   + vers_stdev
   + (1 | traject)
   ,
@@ -34,28 +34,28 @@ tidy(m_nb2, effects = "ran_vals")
 
 
 ```{r eval=!is.null(m_nb2)}
-g <- ggeffect(m_nb2, "type")
+g <- ggpredict(m_nb2, "type [all]")
 plot(g)
 ```
 
 ```{r eval=!is.null(m_nb2)}
-g <- ggeffect(m_nb2, "jaar")
+g <- ggpredict(m_nb2, "jaar [all]")
 plot(g)
 ```
 
 ```{r eval=!is.null(m_nb2)}
-g <- ggeffect(m_nb2, "rijsh")
-plot(g) + scale_x_continuous(transform = scales::pseudo_log_trans())
+g <- ggpredict(m_nb2, "rijshf [all]")
+plot(g)
 ```
 
 ```{r eval=!is.null(m_nb2)}
-g <- ggeffect(m_nb2, "vers_gem")
+g <- ggpredict(m_nb2, "vers_gem [all]")
 plot(g)
 ```
 
 
 ```{r eval=!is.null(m_nb2)}
-g <- ggeffect(m_nb2, "vers_stdev")
+g <- ggpredict(m_nb2, "vers_stdev [all]")
 plot(g)
 ```
 
