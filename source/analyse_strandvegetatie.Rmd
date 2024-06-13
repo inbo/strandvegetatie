@@ -32,9 +32,9 @@ strand <- read_excel(
     traject = factor(traject),
     type = factor(type),
     rijshf = case_when(
-      rijsh == 0 ~ "geen rijshout",
-      between(rijsh, 0, 5000) ~ "tot 5000 m2",
-      rijsh > 5000 ~ "meer dan 5000 m2"
+      rijsh_opp == 0 ~ "geen rijshout",
+      between(rijsh_opp, 0, 5000) ~ "tot 5000 m2",
+      rijsh_opp > 5000 ~ "meer dan 5000 m2"
     ) %>% factor(levels = c("geen rijshout", "tot 5000 m2", "meer dan 5000 m2"))
   )
 
@@ -74,7 +74,7 @@ strand %>%
 ```{r}
 strand2 <- strand %>%
   pivot_longer(
-    cols = c(ammopare:polynoxy),
+    cols = c(ammopare:hok_soort),
     names_to = "soort",
     values_to = "aantal"
   )
@@ -94,7 +94,7 @@ strand2 %>%
 strand %>%
   ggplot() +
   geom_line(
-    aes(x = jaar, y = rijsh, group = traject, colour = type),
+    aes(x = jaar, y = rijsh_opp, group = traject, colour = type),
     alpha = 0.4
   )
 strand %>%
@@ -138,10 +138,36 @@ strand %>%
     aes(colour = type), alpha = 0.4
   ) +
   ggforce::facet_matrix(
-    rows = vars(rijsh, opp, vers_gem, vers_stdev, helling))
+    rows = vars(rijsh_opp, opp, vers_gem, vers_stdev, helling))
 ```
 
 # Modellering
+
+
+
+Aparte analyse voor:
+
+-   dijk - badplaats eruit
+-   helling erin (of PCA eerste as) / type eruit laten
+-   ipv opp in model: opp / (10 m x 10 m) = totaal aantal hokken die potentieel bezet kunnen worden en dan als binomiaal modelleren (Sam zal dit berekenen in GIS door hokken te tellen die minstens 50% overlappen met de oppervlakte van het strand)
+-   factor corona (Zeeraket massaal bloei in voorjaar 2020, maar tijdens telling in najaar bijna niets meer te zien. Effect van lockdown versoepelingen?)
+-   eerste twee jaren is helm (Ammophilla arenaria) niet geteld
+
+-   traject random effecten sorteren en visualiseren
+-   ook eens alle soorten sommeren of beter als één soort beschouwen
+-   eens kijken of er p-waarden kunnen toegevoegd worden
+
+
+```{r}
+strand2_zonder_dijkbadplaats <- strand2 %>%
+  filter(
+    type != "Dijk_badplaats",
+    !(soort == "ammopare" & jaar %in% c(2007, 2008))
+  ) %>%
+  droplevels()
+```
+
+
 
 ```{r child-model, results = "asis", eval = TRUE}
 purrr::pmap(
@@ -149,7 +175,7 @@ purrr::pmap(
     species = c(
       "ammopare", "cakilmar", "elymufar",
       "honckpep", "leymuare", "salsok_k",
-      "atrippro", "beta_v_m")
+      "atrippro", "beta_v_m", "hok_soort")
   ),
   function(
     species = species) {

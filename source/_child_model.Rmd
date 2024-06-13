@@ -1,61 +1,90 @@
 ## {{species}}
 
 ```{r}
-m_nb2 <- sdmTMB(
-  {{species}} ~
+analysedata <- strand2_zonder_dijkbadplaats %>%
+  filter(
+    soort == "{{species}}"
+  ) %>%
+  mutate(
+    prop_aanwezig = aantal / max_hok
+  )
+```
+
+
+
+```{r}
+m_binom <- sdmTMB(
+  prop_aanwezig ~
     s(jaar)
-  + type
+  + helling
   + rijshf
   + vers_gem
   + vers_stdev
   + (1 | traject)
   ,
-  data = strand,
-  family = nbinom2(),
+  data = analysedata,
+  weights = analysedata$max_hok,
+  family = binomial(),
   spatial = "off")
 ```
 
-```{r eval=!is.null(m_nb2)}
+```{r eval=!is.null(m_binom)}
 set.seed(123)
-rq_res <- residuals(m_nb2, type = "mle-mvn")
+rq_res <- residuals(m_binom, type = "mle-mvn")
 rq_res <- rq_res[is.finite(rq_res)] # some Inf
 qqnorm(rq_res)
 abline(0, 1)
 
-sanity(m_nb2)
+sanity(m_binom)
 ```
 
 
-```{r eval=!is.null(m_nb2)}
-tidy(m_nb2)
-tidy(m_nb2, effects = "ran_pars")
-tidy(m_nb2, effects = "ran_vals")
+```{r eval=!is.null(m_binom)}
+fe <- tidy(m_binom)
+rp <- tidy(m_binom, effects = "ran_pars")
+rv <- tidy(m_binom, effects = "ran_vals")
+fe
+rp
+rv
+```
+
+```{r}
+rv %>%
+  mutate(term = reorder(term, estimate)) %>%
+  ggplot() +
+  geom_point(
+    aes(
+      x = estimate,
+      y = term
+    )
+  ) +
+  geom_vline(xintercept = 0)
 ```
 
 
-```{r eval=!is.null(m_nb2)}
-g <- ggpredict(m_nb2, "type [all]")
+```{r eval=!is.null(m_binom)}
+g <- ggpredict(m_binom, "helling")
 plot(g)
 ```
 
-```{r eval=!is.null(m_nb2)}
-g <- ggpredict(m_nb2, "jaar [all]")
+```{r eval=!is.null(m_binom)}
+g <- ggpredict(m_binom, "jaar [all]")
 plot(g)
 ```
 
-```{r eval=!is.null(m_nb2)}
-g <- ggpredict(m_nb2, "rijshf [all]")
+```{r eval=!is.null(m_binom)}
+g <- ggpredict(m_binom, "rijshf [all]")
 plot(g)
 ```
 
-```{r eval=!is.null(m_nb2)}
-g <- ggpredict(m_nb2, "vers_gem [all]")
+```{r eval=!is.null(m_binom)}
+g <- ggpredict(m_binom, "vers_gem [all]")
 plot(g)
 ```
 
 
-```{r eval=!is.null(m_nb2)}
-g <- ggpredict(m_nb2, "vers_stdev [all]")
+```{r eval=!is.null(m_binom)}
+g <- ggpredict(m_binom, "vers_stdev [all]")
 plot(g)
 ```
 
