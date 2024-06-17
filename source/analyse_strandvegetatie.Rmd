@@ -39,6 +39,12 @@ strand <- read_excel(
   )
 
 strand
+
+nao <- readr::read_table(
+  here::here("data", "nao.txt"),
+  na = "-99.990"
+) %>%
+  filter(year %in% unique(strand$jaar))
 ```
 
 # Verkenning van de gegevens
@@ -141,6 +147,19 @@ strand %>%
     rows = vars(rijsh_opp, opp, vers_gem, vers_stdev, helling))
 ```
 
+
+NAO (north atlantic oscillation) index:
+
+```{r}
+nao %>%
+  ggplot() +
+  geom_col(
+    aes(x = year, y = annual)
+  )
+```
+
+
+
 # Modellering
 
 
@@ -164,7 +183,11 @@ strand2_zonder_dijkbadplaats <- strand2 %>%
     type != "Dijk_badplaats",
     !(soort == "ammopare" & jaar %in% c(2007, 2008))
   ) %>%
-  droplevels()
+  droplevels() %>%
+  left_join(
+    nao %>%
+      select(jaar = year, nao_annual = annual),
+    by = join_by(jaar))
 ```
 
 

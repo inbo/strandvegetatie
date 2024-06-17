@@ -16,6 +16,7 @@ analysedata <- strand2_zonder_dijkbadplaats %>%
 m_binom <- sdmTMB(
   prop_aanwezig ~
     s(jaar)
+  + nao_annual
   + helling
   + rijshf
   + vers_gem
@@ -61,6 +62,10 @@ rv %>%
   geom_vline(xintercept = 0)
 ```
 
+```{r eval=!is.null(m_binom)}
+g <- ggpredict(m_binom, "nao_annual")
+plot(g)
+```
 
 ```{r eval=!is.null(m_binom)}
 g <- ggpredict(m_binom, "helling")
